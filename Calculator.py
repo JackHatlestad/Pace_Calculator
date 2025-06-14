@@ -5,12 +5,7 @@ def get_float_input(Prompt):
 
 def parse_time_input(Time):
     parts = Time.split(':')
-    
-    try:
-        parts_int = [int(p) for p in parts]
-    except ValueError:
-        print("Invalid input, please enter numbers separated by ':'")
-        return None
+    parts_int = [int(p) for p in parts]
     
     if len(parts_int) == 1:
         hours = 0
@@ -36,11 +31,7 @@ def parse_time_input(Time):
 def parse_pace_input(Pace):
     parts = Pace.split(':')
     
-    try:
-        parts_int = [int(p) for p in parts]
-    except ValueError:
-        print("Invalid input, please enter numbers separated by ':'")
-        return None
+    parts_int = [int(p) for p in parts]
     
     if len(parts_int) == 1:
         minutes = 0
@@ -56,16 +47,23 @@ def parse_pace_input(Pace):
     mph = 60 / minutes 
     return float(mph) if mph else None
 
+print("Welcome to the Pace Calculator")
 Distance = get_float_input("Enter distance (in miles): ")
 Time = input("How long did it take in HH:MM:SS?")
 Pace = input("What was your pace? MM:SS")
 
-print(get_float_input(Distance))
-5
+if get_float_input(Distance) is None:
+    minutes = float(parse_time_input(Time) / 60)
+    distance_result = round(float(parse_pace_input(Pace) * minutes), 2)
+    print("You ran ", distance_result, " miles")
+elif parse_time_input(Time) is None:
+    time_hours = float(get_float_input(Distance) / parse_pace_input(Pace))
+    time_minutes = time_hours * 60
+    print(time_minutes)
 
 
 
 Time_Minutes = float(parse_time_input(Time))
 
 Pace = Time_Minutes / Distance
-print(Pace)
+
