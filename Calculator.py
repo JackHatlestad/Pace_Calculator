@@ -1,69 +1,101 @@
+import pandas as pd 
+from datetime import datetime
+import os
 
-def get_float_input(Prompt):
-    value = input(Prompt)
+def get_float_input(prompt):
+    value = input(prompt)
     return float(value) if value else None
 
-def parse_time_input(Time):
-    parts = Time.split(':')
+def parse_time_input(time_str):
+    parts = time_str.split(':')
     parts_int = [int(p) for p in parts]
-    
+
     if len(parts_int) == 1:
         hours = 0
         minutes = 0
         seconds = parts_int[0]
     elif len(parts_int) == 2:
         hours = 0
-        minutes = parts_int[0]
-        seconds = parts_int[1]
+        minutes, seconds = parts_int
     elif len(parts_int) == 3:
         hours, minutes, seconds = parts_int
     else:
         print("Invalid time format")
         return None
-    
-    hours_minutes = hours * 60
-    seconds_minutes = seconds / 60
 
-    minutes_total = minutes + hours_minutes + seconds_minutes
-    
-    return float(minutes_total) if minutes_total else None
+    total_minutes = hours * 60 + minutes + seconds / 60
+    return total_minutes
 
-def parse_pace_input(Pace):
-    parts = Pace.split(':')
-    
+def parse_pace_input(pace_str):
+    parts = pace_str.split(':')
     parts_int = [int(p) for p in parts]
-    
+
     if len(parts_int) == 1:
         minutes = 0
         seconds = parts_int[0]
     elif len(parts_int) == 2:
-        minutes = parts_int[0]
-        seconds = parts_int[1]
+        minutes, seconds = parts_int
     else:
-        print("Invalid time format")
+        print("Invalid pace format")
         return None
-    
-    minutes = minutes + (seconds/60) 
-    mph = 60 / minutes 
-    return float(mph) if mph else None
+
+    total_minutes_per_mile = minutes + seconds / 60
+    return total_minutes_per_mile
 
 print("Welcome to the Pace Calculator")
-Distance = get_float_input("Enter distance (in miles): ")
-Time = input("How long did it take in HH:MM:SS?")
-Pace = input("What was your pace? MM:SS")
+distance = get_float_input("Enter distance (in miles), or leave blank: ")
+time_str = input("Enter time (HH:MM:SS), or leave blank: ")
+pace_str = input("Enter pace (MM:SS per mile), or leave blank: ")
 
-if get_float_input(Distance) is None:
-    minutes = float(parse_time_input(Time) / 60)
-    distance_result = round(float(parse_pace_input(Pace) * minutes), 2)
-    print("You ran ", distance_result, " miles")
-elif parse_time_input(Time) is None:
-    time_hours = float(get_float_input(Distance) / parse_pace_input(Pace))
-    time_minutes = time_hours * 60
-    print(time_minutes)
+time_min = parse_time_input(time_str) if time_str else None
+pace_min_per_mile = parse_pace_input(pace_str) if pace_str else None
+
+if distance is None and time_min is not None and pace_min_per_mile is not None:
+    # Calculate distance
+    distance = time_min / pace_min_per_mile
+    distance = round(distance,2)
+    print(f"You ran {distance:.2f} miles.")
+
+elif time_min is None and distance is not None and pace_min_per_mile is not None:
+    # Calculate time
+    time_min = distance * pace_min_per_mile
+    hours = int(time_min // 60)
+    minutes = int(time_min % 60)
+    seconds = int((time_min - int(time_min)) * 60)
+    time_str = f"{hours:02}:{minutes:02}:{seconds:02}"
+    print(f"Your time was {hours:02}:{minutes:02}:{seconds:02}")
+
+elif pace_min_per_mile is None and distance is not None and time_min is not None:
+    # Calculate pace
+    pace_min_per_mile = time_min / distance
+    pace_minutes = int(pace_min_per_mile)
+    pace_seconds = int((pace_min_per_mile - pace_minutes) * 60)
+    pace_str = f"{pace_minutes}:{pace_seconds:02}"
+    print(f"Your pace was {pace_minutes}:{pace_seconds:02} per mile.")
+
+else:
+    print("Please enter exactly two of the three values: distance, time, or pace.")
+
+running_stats = pd.DataFrame(columns=["Date", "Time", "Distance", "Pace"])
 
 
+today = datetime.today()
+formatted_date = today.strftime("%m/%d/%Y")
 
-Time_Minutes = float(parse_time_input(Time))
+# New row as a DataFrame
+new_row = pd.DataFrame([{
+    "Date": formatted_date,
+    "Time": time_str,
+    "Distance": distance,
+    "Pace": pace_str
+}])
 
-Pace = Time_Minutes / Distance
+# Add the new row
+running_stats = pd.concat([running_stats, new_row], ignore_index=True)
+
+if not os.path.exists("running_data.xlsx"):
+    running_stats.to_csv("running_data.xlsx", index=False)  # First time: write with header
+else:
+    running_stats.to_csv("running_data.xlsx", mode="a", header=False, index=False)  # Append without header
+
 
