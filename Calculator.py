@@ -1,6 +1,7 @@
 import pandas as pd 
 from datetime import datetime
 import os
+import tkinter as tk
 
 def get_float_input(prompt):
     value = input(prompt)
@@ -42,7 +43,11 @@ def parse_pace_input(pace_str):
     total_minutes_per_mile = minutes + seconds / 60
     return total_minutes_per_mile
 
-print("Welcome to the Pace Calculator")
+root = tk.Tk()
+root.title("Welcome to the Pace Calculator")
+root.mainloop()
+
+# print("Welcome to the Pace Calculator")
 distance = get_float_input("Enter distance (in miles), or leave blank: ")
 time_str = input("Enter time (HH:MM:SS), or leave blank: ")
 pace_str = input("Enter pace (MM:SS per mile), or leave blank: ")
@@ -94,8 +99,8 @@ new_row = pd.DataFrame([{
 running_stats = pd.concat([running_stats, new_row], ignore_index=True)
 
 if not os.path.exists("running_data.xlsx"):
-    running_stats.to_csv("running_data.xlsx", index=False)  # First time: write with header
+    running_stats.to_excel("running_data.xlsx", index=False)  # First time: write with header
 else:
-    running_stats.to_csv("running_data.xlsx", mode="a", header=False, index=False)  # Append without header
+    running_stats.to_excel("running_data.xlsx", mode="a", header=False, index=False)  # Append without header
 
 
