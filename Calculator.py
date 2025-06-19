@@ -1,6 +1,4 @@
 import pandas as pd 
-from datetime import datetime
-import os
 import tkinter as tk
 
 def parse_time_input(time_entry):
@@ -39,6 +37,7 @@ def parse_pace_input(pace_entry):
     total_minutes_per_mile = minutes + seconds / 60
     return total_minutes_per_mile
 
+
 def on_button_click():
     distance_entry_get = distance_entry.get()
     time_entry_get = time_entry.get()
@@ -50,7 +49,7 @@ def on_button_click():
 
     if distance is None and time_min is not None and pace_min_per_mile is not None:
         distance = time_min / pace_min_per_mile
-        tk.Label(root, text=f"You ran {distance:.2} miles.", font=("Times New Roman", 9)).pack()
+        distance_label = tk.Label(root, text=f"You ran {distance:.2} miles.", font=("Times New Roman", 9))
 
     elif time_min is None and distance is not None and pace_min_per_mile is not None:
         time_min = distance * pace_min_per_mile
