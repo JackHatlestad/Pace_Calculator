@@ -45,6 +45,19 @@ def parse_pace_input(pace_str):
 
 root = tk.Tk()
 root.title("Welcome to the Pace Calculator")
+root.geometry("400x300")
+
+tk.Label(root, text="How many miles did you run").pack()
+entry_name = tk.Entry(root)
+entry_name.pack()
+
+tk.Label(root, text="Enter your address:").pack()
+entry_address = tk.Entry(root)
+entry_address.pack()
+
+tk.Label(root, text="Enter your email:").pack()
+entry_email = tk.Entry(root)
+entry_email.pack()
 root.mainloop()
 
 # print("Welcome to the Pace Calculator")
