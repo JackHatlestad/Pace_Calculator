@@ -3,12 +3,8 @@ from datetime import datetime
 import os
 import tkinter as tk
 
-def get_float_input(prompt):
-    value = input(prompt)
-    return float(value) if value else None
-
-def parse_time_input(time_str):
-    parts = time_str.split(':')
+def parse_time_input(time_entry):
+    parts = time_entry.split(':')
     parts_int = [int(p) for p in parts]
 
     if len(parts_int) == 1:
@@ -27,8 +23,8 @@ def parse_time_input(time_str):
     total_minutes = hours * 60 + minutes + seconds / 60
     return total_minutes
 
-def parse_pace_input(pace_str):
-    parts = pace_str.split(':')
+def parse_pace_input(pace_entry):
+    parts = pace_entry.split(':')
     parts_int = [int(p) for p in parts]
 
     if len(parts_int) == 1:
@@ -43,77 +39,53 @@ def parse_pace_input(pace_str):
     total_minutes_per_mile = minutes + seconds / 60
     return total_minutes_per_mile
 
+def on_button_click():
+    distance_entry_get = distance_entry.get()
+    time_entry_get = time_entry.get()
+    pace_entry_get = pace_entry.get()
+
+    distance = float(distance_entry_get) if distance_entry_get else None
+    time_min = parse_time_input(time_entry_get) if time_entry_get else None
+    pace_min_per_mile = parse_pace_input(pace_entry_get) if pace_entry_get else None
+
+    if distance is None and time_min is not None and pace_min_per_mile is not None:
+        distance = time_min / pace_min_per_mile
+        tk.Label(root, text=f"You ran {distance:.2} miles.", font=("Times New Roman", 9)).pack()
+
+    elif time_min is None and distance is not None and pace_min_per_mile is not None:
+        time_min = distance * pace_min_per_mile
+        hours = int(time_min // 60)
+        minutes = int(time_min % 60)
+        seconds = int((time_min - int(time_min)) * 60)
+
+        tk.Label(root, text=f"Your time was {hours:02}:{minutes:02}:{seconds:02}", font=("Times New Roman", 9)).pack()
+    elif pace_min_per_mile is None and distance is not None and time_min is not None:
+        pace_min_per_mile = time_min / distance
+        pace_minutes = int(pace_min_per_mile)
+        pace_seconds = int((pace_min_per_mile - pace_minutes) * 60)
+
+        tk.Label(root, text=f"Your pace was {pace_minutes}:{pace_seconds:02} per mile.", font=("Times New Roman", 9)).pack()
+    else:
+        print("Please enter exactly two of the three values: distance, time, or pace.")
+
 root = tk.Tk()
-root.title("Welcome to the Pace Calculator")
-root.geometry("400x300")
+root.title("Running Calculator")
+root.geometry("500x400")
 
-tk.Label(root, text="How many miles did you run").pack()
-entry_name = tk.Entry(root)
-entry_name.pack()
+tk.Label(root, text="Welcome to the Running Calculator!", font=("Times New Roman", 16), fg="black").pack()
+tk.Label(root, text="For whatever metric you want to calculator, just leave it blank and fill in the other two.", 
+         font=("Times New Roman", 9), pady=30).pack()
 
-tk.Label(root, text="Enter your address:").pack()
-entry_address = tk.Entry(root)
-entry_address.pack()
+tk.Label(root, text="Enter distance (in miles): ").pack()
+distance_entry = tk.Entry(root)
+distance_entry.pack()
 
-tk.Label(root, text="Enter your email:").pack()
-entry_email = tk.Entry(root)
-entry_email.pack()
+tk.Label(root, text="Enter time (HH:MM:SS):").pack()
+time_entry = tk.Entry(root)
+time_entry.pack()
+
+tk.Label(root, text="Enter pace (MM:SS per mile):").pack()
+pace_entry = tk.Entry(root)
+pace_entry.pack()
+tk.Button(root, text="Enter", command=on_button_click).pack()
 root.mainloop()
-
-# print("Welcome to the Pace Calculator")
-distance = get_float_input("Enter distance (in miles), or leave blank: ")
-time_str = input("Enter time (HH:MM:SS), or leave blank: ")
-pace_str = input("Enter pace (MM:SS per mile), or leave blank: ")
-
-time_min = parse_time_input(time_str) if time_str else None
-pace_min_per_mile = parse_pace_input(pace_str) if pace_str else None
-
-if distance is None and time_min is not None and pace_min_per_mile is not None:
-    # Calculate distance
-    distance = time_min / pace_min_per_mile
-    distance = round(distance,2)
-    print(f"You ran {distance:.2f} miles.")
-
-elif time_min is None and distance is not None and pace_min_per_mile is not None:
-    # Calculate time
-    time_min = distance * pace_min_per_mile
-    hours = int(time_min // 60)
-    minutes = int(time_min % 60)
-    seconds = int((time_min - int(time_min)) * 60)
-    time_str = f"{hours:02}:{minutes:02}:{seconds:02}"
-    print(f"Your time was {hours:02}:{minutes:02}:{seconds:02}")
-
-elif pace_min_per_mile is None and distance is not None and time_min is not None:
-    # Calculate pace
-    pace_min_per_mile = time_min / distance
-    pace_minutes = int(pace_min_per_mile)
-    pace_seconds = int((pace_min_per_mile - pace_minutes) * 60)
-    pace_str = f"{pace_minutes}:{pace_seconds:02}"
-    print(f"Your pace was {pace_minutes}:{pace_seconds:02} per mile.")
-
-else:
-    print("Please enter exactly two of the three values: distance, time, or pace.")
-
-running_stats = pd.DataFrame(columns=["Date", "Time", "Distance", "Pace"])
-
-
-today = datetime.today()
-formatted_date = today.strftime("%m/%d/%Y")
-
-# New row as a DataFrame
-new_row = pd.DataFrame([{
-    "Date": formatted_date,
-    "Time": time_str,
-    "Distance": distance,
-    "Pace": pace_str
-}])
-
-# Add the new row
-running_stats = pd.concat([running_stats, new_row], ignore_index=True)
-
-if not os.path.exists("running_data.xlsx"):
-    running_stats.to_excel("running_data.xlsx", index=False)  # First time: write with header
-else:
-    running_stats.to_excel("running_data.xlsx", mode="a", header=False, index=False)  # Append without header
-
-
