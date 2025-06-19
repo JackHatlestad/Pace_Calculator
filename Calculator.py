@@ -1,4 +1,3 @@
-import pandas as pd 
 import tkinter as tk
 
 def parse_time_input(time_entry):
@@ -8,16 +7,15 @@ def parse_time_input(time_entry):
     if len(parts_int) == 1:
         hours = 0
         minutes = 0
-        seconds = parts_int[0]
+        seconds = parts_int
     elif len(parts_int) == 2:
         hours = 0
         minutes, seconds = parts_int
     elif len(parts_int) == 3:
         hours, minutes, seconds = parts_int
     else:
-        print("Invalid time format")
+        result_label.config(text="Invalid Time Format")
         return None
-
     total_minutes = hours * 60 + minutes + seconds / 60
     return total_minutes
 
@@ -31,12 +29,11 @@ def parse_pace_input(pace_entry):
     elif len(parts_int) == 2:
         minutes, seconds = parts_int
     else:
-        print("Invalid pace format")
+        result_label.config(text="Invalid Time Format")
         return None
 
     total_minutes_per_mile = minutes + seconds / 60
     return total_minutes_per_mile
-
 
 def on_button_click():
     distance_entry_get = distance_entry.get()
@@ -49,23 +46,23 @@ def on_button_click():
 
     if distance is None and time_min is not None and pace_min_per_mile is not None:
         distance = time_min / pace_min_per_mile
-        distance_label = tk.Label(root, text=f"You ran {distance:.2} miles.", font=("Times New Roman", 9))
+        result_label.config(text=f"You ran {distance:.2f} miles.")
 
     elif time_min is None and distance is not None and pace_min_per_mile is not None:
         time_min = distance * pace_min_per_mile
         hours = int(time_min // 60)
         minutes = int(time_min % 60)
         seconds = int((time_min - int(time_min)) * 60)
+        result_label.config(text=f"Your time was {hours:02}:{minutes:02}:{seconds:02}")
 
-        tk.Label(root, text=f"Your time was {hours:02}:{minutes:02}:{seconds:02}", font=("Times New Roman", 9)).pack()
     elif pace_min_per_mile is None and distance is not None and time_min is not None:
         pace_min_per_mile = time_min / distance
         pace_minutes = int(pace_min_per_mile)
         pace_seconds = int((pace_min_per_mile - pace_minutes) * 60)
+        result_label.config(text=f"Your pace was {pace_minutes}:{pace_seconds:02} per mile.")
 
-        tk.Label(root, text=f"Your pace was {pace_minutes}:{pace_seconds:02} per mile.", font=("Times New Roman", 9)).pack()
     else:
-        print("Please enter exactly two of the three values: distance, time, or pace.")
+        result_label.config(text="Please enter exactly two of the three values: distance, time, or pace.")
 
 root = tk.Tk()
 root.title("Running Calculator")
@@ -87,4 +84,6 @@ tk.Label(root, text="Enter pace (MM:SS per mile):").pack()
 pace_entry = tk.Entry(root)
 pace_entry.pack()
 tk.Button(root, text="Enter", command=on_button_click).pack()
+result_label = tk.Label(root, text="", font=("Times New Roman", 9))
+result_label.pack()
 root.mainloop()
